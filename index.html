@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Virtual Store</title>
+    <title>Type Shop</title>
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
@@ -11,11 +11,21 @@
       <canvas id="scene"></canvas>
 
       <div id="hud" class="panel">
-        <div class="hud-count">Items in basket: <strong id="basket-count">0</strong></div>
+        <div class="hud-count">Letters in basket: <strong id="basket-count">0</strong></div>
+        <div class="hud-word" id="basket-word"></div>
         <div class="hud-hint" id="hud-hint">Pinch to grab · R reset · D debug</div>
         <div class="hud-buttons">
           <button id="btn-reset" type="button">Reset (R)</button>
           <button id="btn-debug" type="button">Debug (D)</button>
+        </div>
+      </div>
+
+      <div id="type-card" class="panel hidden">
+        <div class="type-glyph" id="type-glyph"></div>
+        <div class="type-text">
+          <div class="type-name" id="type-name"></div>
+          <div class="type-class" id="type-class"></div>
+          <div class="type-note" id="type-note"></div>
         </div>
       </div>
 
@@ -30,16 +40,18 @@
 
       <div id="overlay">
         <div class="card" id="overlay-card">
-          <h1>Virtual Store</h1>
+          <h1>Type Shop</h1>
           <p>
-            Grab products off the shelves with your real hands. Your webcam is used for
-            hand tracking only — video never leaves your computer.
+            A store where the products are letters. Each shelf holds a different typeface,
+            from blackletter to geometric sans. Grab letters with your real hands and
+            spell words in the basket. Your webcam is only used for hand tracking, and
+            the video never leaves your computer.
           </p>
           <ol>
-            <li><strong>Pinch</strong> (thumb + index) near a product to grab it.</li>
+            <li><strong>Pinch</strong> (thumb + index) near a letter to grab it.</li>
             <li>Move your hand to carry it; open the pinch to drop or gently toss it.</li>
             <li>Move your hand toward the screen to reach deeper into the aisle.</li>
-            <li>Drop items into the red basket on the counter.</li>
+            <li>Drop letters into the red basket to spell a word, read left to right.</li>
           </ol>
           <div class="actions">
             <button id="btn-camera" class="primary" type="button">Allow camera</button>

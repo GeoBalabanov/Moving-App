@@ -37,8 +37,10 @@ export class Physics {
         .setRotation(p.homeQuaternion)
         .setCcdEnabled(true)
         .setLinearDamping(0.05)
-        // Fruit would roll forever on a flat shelf; extra angular damping settles it.
-        .setAngularDamping(p.shape.type === 'ball' ? 1.5 : 0.2);
+        .setAngularDamping(0.3)
+        // Letters with round or slanted bottoms would tip over on their own, so on
+        // the shelf they stay upright (they can still slide when pushed) until grabbed.
+        .lockRotations();
       const body = this.world.createRigidBody(desc);
       let collider: RAPIER.ColliderDesc;
       switch (p.shape.type) {
@@ -47,14 +49,14 @@ export class Physics {
           collider = RAPIER.ColliderDesc.cuboid(h.x, h.y, h.z);
           break;
         }
-        case 'cylinder':
-          collider = RAPIER.ColliderDesc.cylinder(p.shape.halfHeight, p.shape.radius);
+        case 'convex': {
+          // Convex hull of the glyph; fall back to its bounding box if hull building fails.
+          const h = p.shape.halfExtents;
+          collider = RAPIER.ColliderDesc.convexHull(p.shape.points) ?? RAPIER.ColliderDesc.cuboid(h.x, h.y, h.z);
           break;
-        case 'ball':
-          collider = RAPIER.ColliderDesc.ball(p.shape.radius);
-          break;
+        }
       }
-      collider.setDensity(p.density).setFriction(0.7).setRestitution(p.shape.type === 'ball' ? 0.35 : 0.15);
+      collider.setDensity(p.density).setFriction(0.7).setRestitution(0.15);
       this.world.createCollider(collider, body);
       this.bodies.push(body);
     }
@@ -87,6 +89,7 @@ export class Physics {
   /** Switch to kinematic so the body follows the hand exactly but still pushes others. */
   grab(index: number): void {
     const body = this.bodies[index];
+    body.lockRotations(false, true);
     body.setBodyType(RAPIER.RigidBodyType.KinematicPositionBased, true);
     body.setLinvel({ x: 0, y: 0, z: 0 }, true);
     body.setAngvel({ x: 0, y: 0, z: 0 }, true);
@@ -123,6 +126,7 @@ export class Physics {
     body.setRotation(p.homeQuaternion, true);
     body.setLinvel({ x: 0, y: 0, z: 0 }, true);
     body.setAngvel({ x: 0, y: 0, z: 0 }, true);
+    body.lockRotations(true, true);
     p.object.position.copy(p.homePosition);
     p.object.quaternion.copy(p.homeQuaternion);
   }

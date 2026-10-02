@@ -36,6 +36,29 @@ html, body {
 #hud { top: 16px; left: 16px; min-width: 220px; }
 .hud-count { font-size: 18px; }
 .hud-count strong { color: var(--accent); font-size: 22px; }
+.hud-word {
+  margin-top: 4px;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  min-height: 0;
+}
+.hud-word:empty { display: none; }
+
+#type-card {
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  max-width: min(560px, calc(100% - 300px));
+}
+.type-glyph { font-size: 56px; line-height: 1; min-width: 56px; text-align: center; }
+.type-name { font-size: 16px; font-weight: 600; }
+.type-class { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin-top: 2px; }
+.type-note { font-size: 13px; opacity: 0.8; margin-top: 4px; line-height: 1.35; }
+
 .hud-hint { opacity: 0.7; margin-top: 4px; font-size: 12px; }
 .hud-buttons { display: flex; gap: 8px; margin-top: 10px; }
 

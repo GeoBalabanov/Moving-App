@@ -1,9 +1,32 @@
-# Virtual Store — grab products with your real hands
+# Type Shop — grab letters with your real hands
 
-A browser-based first-person store aisle. Your Mac's webcam tracks your hands
-(MediaPipe HandLandmarker), and you pinch to pick products off the shelves, carry
-them, pass them between hands, toss them, and drop them into the basket. You don't
-need a VR headset: just a laptop camera.
+A browser-based first-person store where the products are **3D letters**. Each
+shelf holds one typeface, and the shelves run roughly through type history: from
+Gutenberg-era blackletter, through old-style, Didone and slab serifs, to grotesque,
+geometric and humanist sans-serifs, monospace and script. Your Mac's webcam tracks
+your hands (MediaPipe HandLandmarker). Pinch to pick letters off the shelves, then
+carry them, pass them between hands, toss them, and drop them into the basket to
+spell words. You don't need a VR headset: just a laptop camera.
+
+## The typefaces
+
+| Shelf unit | Top → bottom |
+| --- | --- |
+| Left (serifs) | Blackletter: UnifrakturMaguntia · Old-style: Sorts Mill Goudy · Modern/Didone: Old Standard · Fat face: Abril Fatface |
+| Middle (slabs & early sans) | Slab serif: Arvo · Slab display: Alfa Slab One · Grotesque: Archivo Black · Geometric: Poppins |
+| Right (later sans & beyond) | Humanist: Fira Sans · Condensed: Bebas Neue · Monospace: Space Mono · Script: Lobster |
+
+The letters are real glyph outlines. opentype.js reads them from the TrueType
+files in `public/fonts/`, and Three.js extrudes them into 3D. Every typeface is set
+at the same cap height, so you can compare proportions directly. A label strip
+under each shelf names the classification and the typeface, set in that typeface.
+When you hover over or hold a letter, a card at the bottom of the screen shows its
+typeface, classification and a short note. The HUD spells out the basket's
+contents from left to right, with each letter in its own typeface.
+
+To change which letters or fonts appear, edit `src/typefaces.ts`. Any `.ttf` you
+drop into `public/fonts/` will work. All the bundled fonts are SIL Open Font
+License fonts from Google Fonts; their licenses are in `public/fonts/licenses/`.
 
 **Stack:** Vite + vanilla TypeScript · Three.js · `@mediapipe/tasks-vision` · Rapier (`@dimforge/rapier3d-compat`)
 
@@ -46,17 +69,17 @@ went wrong, and the mouse fallback keeps working.
 
 | Action | Hands | Mouse |
 | --- | --- | --- |
-| Highlight an item | move your pinch point (thumb + index) near it | hover it |
+| Highlight a letter | move your pinch point (thumb + index) near it | hover it |
 | Grab | pinch thumb and index together | press and hold |
 | Move | move your hand; move it **toward the screen** to reach deeper into the aisle | drag (the item glides over shelves, counter and basket) |
 | Drop / toss | open the pinch, flicking your hand to throw | release, flicking to toss |
 | Pass between hands | pinch an item that your other hand is holding | — |
 
-Keys: **R** resets all products to their shelves. **D** toggles the debug panel
+Keys: **R** puts all letters back on their shelves. **D** toggles the debug panel
 (FPS, detection time, hands, pinch ratio, hand size, depth). **I** flips the depth
 direction (see below).
 
-The HUD counts the items that are currently in the red basket.
+The HUD counts the letters in the red basket and shows the word they spell.
 
 ## How it works
 
@@ -65,8 +88,10 @@ src/
   main.ts          boot, start screen, one requestAnimationFrame loop for detection + physics + render
   config.ts        all tuning constants (layout, depth calibration, pinch thresholds, throw)
   scene.ts         Three.js renderer, camera, lights/shadows, floor, walls, shelves, counter, basket
-  products.ts      30 procedural products (boxes, cans, bottles, jars, fruit) + highlight helper
-  physics.ts       Rapier world, static colliders, dynamic ⇄ kinematic switching, reset
+  typefaces.ts     the 12 shelf typefaces: classification, teaching note, letters, colours
+  glyphGeometry.ts TTF loading (opentype.js) → extruded glyph geometry + convex-hull points
+  products.ts      30 letter products, shelf label strips, highlight helper
+  physics.ts       Rapier world, static colliders, convex-hull letter bodies, dynamic ⇄ kinematic switching, reset
   handTracking.ts  webcam permission, HandLandmarker (VIDEO mode, GPU → CPU fallback), mirrored preview
   handMapping.ts   landmarks → 3D hand (projection, depth from hand size, One Euro smoothing)
   gestures.ts      pinch detection with hysteresis
@@ -95,6 +120,11 @@ src/
   up. While you hold it, its body is *kinematic* and follows your hand, pushing
   other items aside. When you let go it becomes dynamic again and picks up your
   hand's velocity over the last ~100 ms, so you can throw it.
+- **Letter physics:** each letter's collider is the convex hull of its glyph, so the
+  gaps in letters like L or C act as if they were filled in. On the shelf, letters
+  stay upright but can still slide when pushed, because round or slanted bottoms
+  (O, S, script and italic forms) would otherwise tip over. Once you grab a letter,
+  it tumbles freely.
 - **Performance:** detection and rendering share one loop. Detection only runs
   when the video has a new frame. If detection averages more than 18 ms, it runs
   every other frame. Physics uses a fixed 60 Hz step.

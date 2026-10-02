@@ -70,7 +70,7 @@ export function createStoreScene(canvas: HTMLCanvasElement): StoreScene {
   addBox(new THREE.Vector3(0, wallH / 2, STORE.frontWallZ + 0.05), new THREE.Vector3(STORE.sideWallX * 2, wallH, 0.1), null);
 
   // Store sign on the back wall.
-  const sign = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 0.45), new THREE.MeshBasicMaterial({ map: makeSignTexture('FRESH MARKET') }));
+  const sign = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 0.45), new THREE.MeshBasicMaterial({ map: makeSignTexture('TYPE SHOP') }));
   sign.position.set(0, 2.45, STORE.backWallZ + 0.01);
   scene.add(sign);
 
@@ -90,12 +90,6 @@ export function createStoreScene(canvas: HTMLCanvasElement): StoreScene {
     // Boards (the products' resting surfaces) + a top cap.
     for (const level of [...STORE.shelfLevels, shelfTop]) {
       addBox(new THREE.Vector3(x, level - bt / 2, z), new THREE.Vector3(W, bt, D), boardMat);
-      // Thin price rail on the front edge.
-      if (level < shelfTop) {
-        const rail = new THREE.Mesh(new THREE.BoxGeometry(W, 0.04, 0.01), frameMat);
-        rail.position.set(x, level - bt - 0.01, z + D / 2 + 0.005);
-        scene.add(rail);
-      }
     }
   }
 

@@ -12,7 +12,7 @@ export const STORE = {
   shelfWidth: 1.5,
   shelfDepth: 0.45,
   /** Top surface heights of the shelf boards products rest on. */
-  shelfLevels: [0.12, 0.55, 0.98, 1.41],
+  shelfLevels: [0.16, 0.58, 1.0, 1.42],
   shelfTop: 1.85,
   boardThickness: 0.03,
   panelThickness: 0.04,

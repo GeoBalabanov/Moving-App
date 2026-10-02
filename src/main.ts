@@ -10,7 +10,7 @@ import { HandVisual } from './handVisuals';
 import { Interaction } from './interaction';
 import { MouseGrabber } from './mouseInput';
 import { Physics } from './physics';
-import { createProducts } from './products';
+import { createProducts, cssFamily } from './products';
 import { createStoreScene } from './scene';
 import { UI } from './ui';
 
@@ -19,7 +19,7 @@ async function main(): Promise<void> {
     onCamera: () => void enableCamera(),
     onMouseOnly: () => {
       ui.hideOverlay();
-      ui.setHint('Mouse mode: drag items onto shelves or the basket · flick to toss · R reset · D debug');
+      ui.setHint('Mouse mode: drag letters onto shelves or the basket · flick to toss · R reset · D debug');
     },
     onReset: () => reset(),
     onToggleDebug: () => ui.toggleDebug(),
@@ -27,7 +27,7 @@ async function main(): Promise<void> {
 
   // --- 3D store + physics -------------------------------------------------------
   const store = createStoreScene(ui.sceneCanvas);
-  const products = createProducts(store.scene);
+  const products = await createProducts(store.scene);
   const physics = new Physics(products);
   await physics.init(store.staticBoxes);
   const interaction = new Interaction(products, physics, store.basket);
@@ -128,6 +128,15 @@ async function main(): Promise<void> {
       }
     }
     ui.setBasketCount(interaction.basketCount);
+    ui.setBasketWord(
+      interaction.basketIndices.map((i) => ({ glyph: products[i].glyph, fontFamily: cssFamily(products[i].typeface) })),
+    );
+    const focus = interaction.focusIndex();
+    if (focus === null) ui.setTypeCard(null);
+    else {
+      const { glyph, typeface } = products[focus];
+      ui.setTypeCard({ glyph, fontFamily: cssFamily(typeface), ...typeface });
+    }
     store.renderer.render(store.scene, store.camera);
 
     if (ui.debugVisible && now - lastDebugUpdate > 150) {

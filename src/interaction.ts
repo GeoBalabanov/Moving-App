@@ -35,6 +35,8 @@ export class Interaction {
   private readonly heldBy: (string | null)[];
   private readonly highlightKey: string[];
   basketCount = 0;
+  /** Products in the basket, ordered left to right (so the letters read as a word). */
+  basketIndices: number[] = [];
 
   private readonly _target = new THREE.Vector3();
   private readonly _vel = new THREE.Vector3();
@@ -191,11 +193,21 @@ export class Interaction {
   }
 
   private countBasket(): void {
-    let n = 0;
-    for (const p of this.products) {
-      if (this.heldBy[p.index] === null && this.basket.bounds.containsPoint(p.object.position)) n++;
+    this.basketIndices = this.products
+      .filter((p) => this.heldBy[p.index] === null && this.basket.bounds.containsPoint(p.object.position))
+      .sort((a, b) => a.object.position.x - b.object.position.x)
+      .map((p) => p.index);
+    this.basketCount = this.basketIndices.length;
+  }
+
+  /** The product currently held (preferred) or hovered by any grabber. */
+  focusIndex(): number | null {
+    let hover: number | null = null;
+    for (const s of this.states.values()) {
+      if (s.held) return s.held.index;
+      if (hover === null) hover = s.hover;
     }
-    this.basketCount = n;
+    return hover;
   }
 
   /** Drop everything (used by reset). */

@@ -12,6 +12,14 @@ export class UI {
   private readonly btnCamera = $<HTMLButtonElement>('btn-camera');
   private readonly btnMouse = $<HTMLButtonElement>('btn-mouse');
   private readonly basketCount = $('basket-count');
+  private readonly basketWord = $('basket-word');
+  private readonly typeCard = $('type-card');
+  private readonly typeGlyph = $('type-glyph');
+  private readonly typeName = $('type-name');
+  private readonly typeClass = $('type-class');
+  private readonly typeNote = $('type-note');
+  private lastWordKey = '';
+  private lastCardKey = '';
   private readonly hudHint = $('hud-hint');
   private readonly debugPanel = $('debug');
   private readonly preview = $('preview');
@@ -64,6 +72,35 @@ export class UI {
     if (n === this.lastCount) return;
     this.lastCount = n;
     this.basketCount.textContent = String(n);
+  }
+
+  /** Letters in the basket, each rendered in its own typeface. */
+  setBasketWord(letters: { glyph: string; fontFamily: string }[]): void {
+    const key = letters.map((l) => l.glyph + l.fontFamily).join('|');
+    if (key === this.lastWordKey) return;
+    this.lastWordKey = key;
+    this.basketWord.replaceChildren(
+      ...letters.map((l) => {
+        const span = document.createElement('span');
+        span.textContent = l.glyph;
+        span.style.fontFamily = `"${l.fontFamily}", serif`;
+        return span;
+      }),
+    );
+  }
+
+  /** Shows the typeface of the letter being held or hovered (null hides it). */
+  setTypeCard(info: { glyph: string; fontFamily: string; name: string; classification: string; note: string } | null): void {
+    const key = info ? info.glyph + info.name : '';
+    if (key === this.lastCardKey) return;
+    this.lastCardKey = key;
+    this.typeCard.classList.toggle('hidden', !info);
+    if (!info) return;
+    this.typeGlyph.textContent = info.glyph;
+    this.typeGlyph.style.fontFamily = `"${info.fontFamily}", serif`;
+    this.typeName.textContent = info.name;
+    this.typeClass.textContent = info.classification;
+    this.typeNote.textContent = info.note;
   }
 
   toggleDebug(): void {
