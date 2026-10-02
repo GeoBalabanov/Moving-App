@@ -21,9 +21,12 @@ export function loadFont(file: string): Promise<Font> {
   return p;
 }
 
-/** Registers the font for 2D canvas drawing (used for shelf labels). */
-export async function registerCssFont(family: string, file: string): Promise<void> {
-  const face = new FontFace(family, `url(${FONT_DIR}${file})`);
+/** CSS font-family name under which a font file is registered for canvas/DOM text. */
+export const fontFamilyFor = (file: string) => `tf-${file.replace(/\W/g, '')}`;
+
+/** Registers the font for 2D canvas drawing (labels, packaging) and DOM text. */
+export async function registerCssFont(file: string): Promise<void> {
+  const face = new FontFace(fontFamilyFor(file), `url(${FONT_DIR}${file})`);
   await face.load();
   document.fonts.add(face);
 }

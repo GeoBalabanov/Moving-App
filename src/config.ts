@@ -1,54 +1,55 @@
 // Shared tuning constants. Units are metres / seconds unless noted.
 
 export const CAMERA = {
-  position: [0, 1.6, 2.6] as const,
-  lookAt: [0, 1.0, -1.0] as const,
-  fov: 55,
+  position: [0, 1.62, 3.55] as const,
+  lookAt: [0, 1.15, -4] as const,
+  fov: 58,
 };
 
-export const STORE = {
-  shelfUnitXs: [-1.65, 0, 1.65],
-  shelfUnitZ: -1.4,
-  shelfWidth: 1.5,
-  shelfDepth: 0.45,
-  /** Top surface heights of the shelf boards products rest on. */
-  shelfLevels: [0.16, 0.58, 1.0, 1.42],
-  shelfTop: 1.85,
-  boardThickness: 0.03,
-  panelThickness: 0.04,
-  /** Limits for where a held letter can be carried (the aisle in front of the display). */
-  backWallZ: -1.8,
-  sideWallX: 2.65,
-  /** Invisible wall just behind the camera. */
-  frontWallZ: 3.2,
-};
-
-/** The visible store around the interactive aisle. */
-export const ROOM = {
-  halfWidth: 7.5,
-  backZ: -10,
-  frontZ: 3.4,
-  height: 3.6,
-};
-
-/** The stocked gondolas that form the aisle you stand in. */
+/**
+ * The aisle you stand in, looking down its length (towards -z). Shelving
+ * ("gondolas") runs along both sides; the front faces sit at ±frontX.
+ */
 export const AISLE = {
-  gondolaX: 3.0,
-  gondolaDepth: 0.6,
-  gondolaHeight: 1.9,
-  startZ: -1.75,
-  endZ: 3.3,
+  frontX: 1.2,
+  depth: 0.55,
+  /** Near end (towards the camera) and far end of the shelving. */
+  startZ: 2.7,
+  endZ: -13,
+  /** Top surfaces of the shelf boards. */
+  levels: [0.14, 0.54, 0.94, 1.34, 1.74],
+  height: 2.12,
+  board: 0.025,
+  /** The type bays: nearest shelving on each side, split into two bays. */
+  typeBays: [
+    [1.1, -0.5],
+    [-0.5, -2.1],
+  ] as const,
+  /** Shelf levels (indices into `levels`) that hold letters in a type bay, top to bottom. */
+  typeLevels: [3, 2, 1] as const,
 };
 
-export const COUNTER = {
-  center: [0.5, 0, 0.75] as const,
-  size: [1.0, 0.4, 0.5] as const,
+export const ROOM = {
+  halfWidth: 4.6,
+  backZ: -15,
+  frontZ: 4.2,
+  height: 3.5,
 };
 
-export const BASKET = {
-  /** Inner size of the basket (x, height, z). */
-  inner: [0.56, 0.22, 0.36] as const,
-  wall: 0.02,
+/** Where a held letter can be carried. */
+export const REACH = {
+  halfWidth: AISLE.frontX - 0.05,
+  minZ: AISLE.endZ,
+  maxZ: 3.3,
+};
+
+/** First-person shopping cart in front of the camera; letters dropped in it count. */
+export const CART = {
+  center: [0, 0, 1.95] as const,
+  /** Inner basket size (x, height, z) and the height of its floor. */
+  inner: [0.52, 0.38, 0.9] as const,
+  floorY: 0.58,
+  wall: 0.012,
 };
 
 export const HAND_MAPPING = {
@@ -65,9 +66,9 @@ export const HAND_MAPPING = {
   /** Smallest size range the calibration may shrink to (keeps depth from being twitchy). */
   minSizeRange: 0.07,
   /** Distance from the virtual camera along the view axis at each end of the range. */
-  distNear: 1.5,
-  /** Just in front of the shelf backs, so the hand never disappears behind the display. */
-  distFar: 4.1,
+  distNear: 1.1,
+  /** Far enough to reach the second type bay; the aisle is open beyond it. */
+  distFar: 5.8,
   /**
    * true  → moving your hand toward the screen reaches deeper into the aisle
    *         (feels like reaching through a window). Toggle in-app with I.

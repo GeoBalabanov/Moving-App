@@ -47,7 +47,7 @@ html, body {
 
 #type-card {
   left: 50%;
-  bottom: 16px;
+  top: 16px;
   transform: translateX(-50%);
   display: flex;
   gap: 14px;

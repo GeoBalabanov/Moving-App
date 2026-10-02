@@ -1,5 +1,6 @@
-// The typefaces on the shelves, roughly in historical order: each shelving
-// unit is a "chapter" of type history, read left to right, top to bottom.
+// The typefaces on the shelves, roughly in historical order. They fill the
+// four "type bays" nearest to you: left side first (near bay, then far bay),
+// then the right side, each bay read top to bottom.
 // All fonts are SIL Open Font License fonts from Google Fonts (see public/fonts/licenses).
 
 export interface Typeface {
@@ -16,8 +17,8 @@ export interface Typeface {
   colors: number[];
 }
 
-/** [unit][row from the top] */
-export const SHELF_TYPEFACES: Typeface[][] = [
+/** In historical order, grouped in threes (one group per type bay). */
+const TYPEFACES: Typeface[][] = [
   [
     {
       name: 'UnifrakturMaguntia',
@@ -121,3 +122,25 @@ export const SHELF_TYPEFACES: Typeface[][] = [
     },
   ],
 ];
+
+export interface TypeBay {
+  /** -1 = left side of the aisle, +1 = right side. */
+  side: -1 | 1;
+  /** 0 = bay nearest to you, 1 = the next one. */
+  bay: 0 | 1;
+  header: string;
+  /** One typeface per shelf, top to bottom. */
+  rows: Typeface[];
+}
+
+const flat = TYPEFACES.flat();
+const HEADERS = ['CLASSIC SERIFS', 'DISPLAY & SLAB SERIFS', 'SANS SERIFS', 'DISPLAY, MONO & SCRIPT'];
+
+export const TYPE_BAYS: TypeBay[] = [0, 1, 2, 3].map((i) => ({
+  side: i < 2 ? -1 : 1,
+  bay: (i % 2) as 0 | 1,
+  header: HEADERS[i],
+  rows: flat.slice(i * 3, i * 3 + 3),
+}));
+
+export const ALL_TYPEFACES = flat;

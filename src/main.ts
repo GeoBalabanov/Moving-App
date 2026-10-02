@@ -10,7 +10,7 @@ import { HandVisual } from './handVisuals';
 import { Interaction } from './interaction';
 import { MouseGrabber } from './mouseInput';
 import { Physics } from './physics';
-import { createProducts, cssFamily } from './products';
+import { createProducts, cssFamily, loadTypefaceFonts } from './products';
 import { createStoreScene } from './scene';
 import { UI } from './ui';
 
@@ -19,15 +19,17 @@ async function main(): Promise<void> {
     onCamera: () => void enableCamera(),
     onMouseOnly: () => {
       ui.hideOverlay();
-      ui.setHint('Mouse mode: drag letters onto shelves or the basket · flick to toss · R reset · D debug');
+      ui.setHint('Mouse mode: drag letters into the cart · flick to toss · R reset · D debug');
     },
     onReset: () => reset(),
     onToggleDebug: () => ui.toggleDebug(),
   });
 
   // --- 3D store + physics -------------------------------------------------------
+  // Fonts first: the 3D letters, shelf labels and grocery packaging all use them.
+  const fonts = await loadTypefaceFonts();
   const store = createStoreScene(ui.sceneCanvas);
-  const products = await createProducts(store.scene);
+  const products = createProducts(store.scene, store.typeShelves, fonts);
   const physics = new Physics(products);
   await physics.init(store.staticBoxes);
   const interaction = new Interaction(products, physics, store.basket);

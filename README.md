@@ -5,27 +5,32 @@ shelf holds one typeface, and the shelves run roughly through type history: from
 Gutenberg-era blackletter, through old-style, Didone and slab serifs, to grotesque,
 geometric and humanist sans-serifs, monospace and script. Your Mac's webcam tracks
 your hands (MediaPipe HandLandmarker). Pinch to pick letters off the shelves, then
-carry them, pass them between hands, toss them, and drop them into the basket to
+carry them, pass them between hands, toss them, and drop them into your shopping cart to
 spell words. You don't need a VR headset: just a laptop camera.
 
-You stand in a supermarket aisle. Stocked shelves line both sides, and the type
-display is at the end of the aisle. Behind it you can see more aisles with hanging
-signs, a wall of coolers and ceiling light panels.
+You look down a long supermarket aisle, with your shopping cart in front of you.
+The shelves on both sides are packed with branded groceries, and every brand name
+is set in one of the class typefaces. There are price tags, red "SAVE 10%" signs,
+overstock cartons on top of the shelves and more shelving at the far end. The
+letters sit in four **type bays** a few steps down the aisle, two on each side,
+each with a hanging section sign. Grab letters and drop them into your cart to
+spell words.
 
 ## The typefaces
 
-| Shelf unit | Top → bottom |
+| Type bay | Shelves (top → bottom) |
 | --- | --- |
-| Left (serifs) | Blackletter: UnifrakturMaguntia · Old-style: Sorts Mill Goudy · Modern/Didone: Old Standard · Fat face: Abril Fatface |
-| Middle (slabs & early sans) | Slab serif: Arvo · Slab display: Alfa Slab One · Grotesque: Archivo Black · Geometric: Poppins |
-| Right (later sans & beyond) | Humanist: Fira Sans · Condensed: Bebas Neue · Monospace: Space Mono · Script: Lobster |
+| Left, near: Classic serifs | Blackletter: UnifrakturMaguntia · Old-style: Sorts Mill Goudy · Modern/Didone: Old Standard |
+| Left, far: Display & slab serifs | Fat face: Abril Fatface · Slab serif: Arvo · Slab display: Alfa Slab One |
+| Right, near: Sans serifs | Grotesque: Archivo Black · Geometric: Poppins · Humanist: Fira Sans |
+| Right, far: Display, mono & script | Condensed: Bebas Neue · Monospace: Space Mono · Script: Lobster |
 
 The letters are real glyph outlines. opentype.js reads them from the TrueType
 files in `public/fonts/`, and Three.js extrudes them into 3D. Every typeface is set
 at the same cap height, so you can compare proportions directly. A label strip
-under each shelf names the classification and the typeface, set in that typeface.
-When you hover over or hold a letter, a card at the bottom of the screen shows its
-typeface, classification and a short note. The HUD spells out the basket's
+on each letter shelf's front edge names the classification and the typeface, set in that typeface.
+When you hover over or hold a letter, a card at the top of the screen shows its
+typeface, classification and a short note. The HUD spells out the cart's
 contents from left to right, with each letter in its own typeface.
 
 To change which letters or fonts appear, edit `src/typefaces.ts`. Any `.ttf` you
@@ -75,15 +80,15 @@ went wrong, and the mouse fallback keeps working.
 | --- | --- | --- |
 | Highlight a letter | move your pinch point (thumb + index) near it | hover it |
 | Grab | pinch thumb and index together | press and hold |
-| Move | move your hand; move it **toward the screen** to reach deeper into the aisle | drag (the item glides over shelves, counter and basket) |
-| Drop / toss | open the pinch, flicking your hand to throw | release, flicking to toss |
+| Move | move your hand; move it **toward the screen** to reach deeper into the aisle | drag (the item glides over shelves and into the cart) |
+| Drop / toss | open the pinch over the cart, or flick your hand to throw | release, flicking to toss |
 | Pass between hands | pinch an item that your other hand is holding | — |
 
 Keys: **R** puts all letters back on their shelves. **D** toggles the debug panel
 (FPS, detection time, hands, pinch ratio, hand size, depth). **I** flips the depth
 direction (see below).
 
-The HUD counts the letters in the red basket and shows the word they spell.
+The HUD counts the letters in your cart and shows the word they spell.
 
 ## How it works
 
@@ -91,9 +96,10 @@ The HUD counts the letters in the red basket and shows the word they spell.
 src/
   main.ts          boot, start screen, one requestAnimationFrame loop for detection + physics + render
   config.ts        all tuning constants (layout, depth calibration, pinch thresholds, throw)
-  scene.ts         renderer, camera, lighting (shadows + environment reflections), the type display, basket counter
-  decor.ts         store dressing: stocked aisle gondolas, background aisles, coolers, ceiling lights, aisle signs
-  textures.ts      procedural canvas textures (floor tiles, pegboard, signs, packaging)
+  scene.ts         renderer, camera, lighting (shadows + environment reflections), room, ceiling, shopping cart
+  aisle.ts         shelving down both sides: grocery stocking, price tags, SAVE signs, cartons, type bays
+  brands.ts        grocery brands (names set in the class typefaces) + packaging, tag and sign textures
+  textures.ts      procedural canvas textures (floor tiles, pegboard, labels, cart wire)
   typefaces.ts     the 12 shelf typefaces: classification, teaching note, letters, colours
   glyphGeometry.ts TTF loading (opentype.js) → extruded glyph geometry + convex-hull points
   products.ts      30 letter products, shelf label strips, highlight helper
@@ -102,7 +108,7 @@ src/
   handMapping.ts   landmarks → 3D hand (projection, depth from hand size, One Euro smoothing)
   gestures.ts      pinch detection with hysteresis
   handVisuals.ts   3D hand (joint spheres + bone cylinders), always-visible x-ray outline, pinch cursor, floor marker
-  interaction.ts   hover, grab, follow, release with velocity, hand-to-hand pass, basket counting
+  interaction.ts   hover, grab, follow, release with velocity, hand-to-hand pass, cart counting
   mouseInput.ts    mouse fallback grabber
   filters.ts       One Euro filter
   ui.ts            overlay, HUD, debug panel

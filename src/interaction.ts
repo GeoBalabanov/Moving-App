@@ -1,7 +1,7 @@
 // Grab / hover / release logic shared by tracked hands and the mouse.
 
 import * as THREE from 'three';
-import { INTERACTION, STORE } from './config';
+import { INTERACTION, REACH } from './config';
 import type { Grabber } from './grabber';
 import type { Physics } from './physics';
 import { setHighlight, type Product } from './products';
@@ -140,9 +140,9 @@ export class Interaction {
     const t = this._target.copy(g.point).add(held.offset);
     // Keep held items inside the room so they can't be dragged through the floor or walls.
     const r = this.products[held.index].boundingRadius * 0.5;
-    t.x = THREE.MathUtils.clamp(t.x, -STORE.sideWallX + r, STORE.sideWallX - r);
+    t.x = THREE.MathUtils.clamp(t.x, -REACH.halfWidth - 0.5, REACH.halfWidth + 0.5);
     t.y = THREE.MathUtils.clamp(t.y, r, 3);
-    t.z = THREE.MathUtils.clamp(t.z, STORE.backWallZ + r, STORE.frontWallZ - r);
+    t.z = THREE.MathUtils.clamp(t.z, REACH.minZ + r, REACH.maxZ - r);
     this.physics.moveKinematic(held.index, t, held.rotation);
   }
 

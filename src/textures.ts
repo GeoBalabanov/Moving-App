@@ -22,18 +22,18 @@ export function seededRandom(seed: number): () => number {
   };
 }
 
-/** One 60 cm polished vinyl floor tile with subtle speckle and grout (repeat it). */
+/** One 50 cm polished beige floor tile with subtle speckle and grout (repeat it). */
 export function makeTileTexture(): THREE.CanvasTexture {
   const n = 512;
   const c = document.createElement('canvas');
   c.width = c.height = n;
   const g = c.getContext('2d')!;
-  g.fillStyle = '#cfcbc3';
+  g.fillStyle = '#d8cbb2';
   g.fillRect(0, 0, n, n);
   const rand = seededRandom(7);
   for (let i = 0; i < 2600; i++) {
     const v = 150 + Math.floor(rand() * 70);
-    g.fillStyle = `rgba(${v},${v - 4},${v - 10},0.35)`;
+    g.fillStyle = `rgba(${v},${v - 8},${v - 22},0.3)`;
     g.fillRect(rand() * n, rand() * n, 1 + rand() * 2.5, 1 + rand() * 2.5);
   }
   g.strokeStyle = 'rgba(120,115,105,0.45)';
@@ -78,25 +78,15 @@ export function makeLabelTexture(text: string, bg: string, fg: string, w: number
   return canvasTexture(c);
 }
 
-/**
- * Generic packaging artwork, tinted per item by instance colour: a lighter
- * label band, a few "text" lines and a darker base stripe.
- */
-export function makePackagingTexture(): THREE.CanvasTexture {
-  const w = 128;
-  const h = 256;
+/** Shopping-cart wire grid: one cell with transparent holes (use alphaTest, repeat it). */
+export function makeWireTexture(): THREE.CanvasTexture {
+  const n = 32;
   const c = document.createElement('canvas');
-  c.width = w;
-  c.height = h;
+  c.width = c.height = n;
   const g = c.getContext('2d')!;
-  g.fillStyle = '#d9d9d9';
-  g.fillRect(0, 0, w, h);
+  g.clearRect(0, 0, n, n);
   g.fillStyle = '#ffffff';
-  g.fillRect(0, h * 0.3, w, h * 0.3);
-  g.fillStyle = '#8a8a8a';
-  g.fillRect(w * 0.15, h * 0.38, w * 0.7, h * 0.05);
-  g.fillRect(w * 0.25, h * 0.48, w * 0.5, h * 0.03);
-  g.fillStyle = '#9e9e9e';
-  g.fillRect(0, h * 0.86, w, h * 0.14);
-  return canvasTexture(c);
+  g.fillRect(0, 0, n, 4);
+  g.fillRect(0, 0, 4, n);
+  return canvasTexture(c, true);
 }

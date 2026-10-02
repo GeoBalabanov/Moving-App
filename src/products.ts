@@ -2,9 +2,11 @@
 // shelf label naming the typeface and its classification.
 
 import * as THREE from 'three';
-import { STORE } from './config';
-import { glyphGeometry, hullPoints, loadFont, registerCssFont } from './glyphGeometry';
-import { SHELF_TYPEFACES, type Typeface } from './typefaces';
+import type { Font } from 'opentype.js';
+import type { TypeShelf } from './aisle';
+import { AISLE } from './config';
+import { fontFamilyFor, glyphGeometry, hullPoints, loadFont, registerCssFont } from './glyphGeometry';
+import { ALL_TYPEFACES, type Typeface } from './typefaces';
 
 export type ColliderShape =
   | { type: 'box'; halfExtents: THREE.Vector3 }
@@ -27,42 +29,45 @@ export interface Product {
 }
 
 /** Cap height of every letter: all typefaces are "set" at the same size. */
-const CAP_HEIGHT = 0.24;
+const CAP_HEIGHT = 0.26;
 const LETTER_DEPTH = 0.06;
+/** How far (radians) letters turn from facing the aisle towards the shopper. */
+const FACE_TURN = 0.5;
 
-export async function createProducts(scene: THREE.Scene): Promise<Product[]> {
-  const all = SHELF_TYPEFACES.flat();
-  const fonts = new Map(await Promise.all(all.map(async (tf) => [tf.file, await loadFont(tf.file)] as const)));
-  // Fonts for the 2D shelf labels; a failure only affects label styling.
-  await Promise.all(all.map((tf) => registerCssFont(cssFamily(tf), tf.file).catch((e) => console.warn(e))));
+/** Loads every class typeface: outlines for the 3D letters, CSS faces for labels/packaging/HUD. */
+export async function loadTypefaceFonts(): Promise<Map<string, Font>> {
+  const files = [...new Set(ALL_TYPEFACES.map((tf) => tf.file))];
+  // A CSS registration failure only affects 2D text styling, so it just warns.
+  await Promise.all(files.map((f) => registerCssFont(f).catch((e) => console.warn(e))));
+  return new Map(await Promise.all(files.map(async (f) => [f, await loadFont(f)] as const)));
+}
 
+export function createProducts(scene: THREE.Scene, shelves: TypeShelf[], fonts: Map<string, Font>): Product[] {
   const products: Product[] = [];
-  SHELF_TYPEFACES.forEach((rows, unit) => {
-    const ux = STORE.shelfUnitXs[unit];
-    rows.forEach((typeface, row) => {
-      // Rows are listed top-down; shelf levels are bottom-up.
-      const levelIndex = STORE.shelfLevels.length - 1 - row;
-      const y = STORE.shelfLevels[levelIndex];
-      addShelfLabel(scene, typeface, ux, y);
-
-      const font = fonts.get(typeface.file)!;
-      const slot = STORE.shelfWidth / typeface.letters.length;
-      typeface.letters.forEach((glyph, i) => {
-        const color = typeface.colors[i % typeface.colors.length];
-        const product = buildLetter(glyph, typeface, font, color, products.length);
-        const x = ux - STORE.shelfWidth / 2 + slot * (i + 0.5);
-        // Near the front edge so the label strip of the shelf above doesn't hide the letter.
-        product.homePosition.set(x, y + product.shape.halfExtents.y + 0.002, STORE.shelfUnitZ + 0.1);
-        product.object.position.copy(product.homePosition);
-        scene.add(product.object);
-        products.push(product);
-      });
+  for (const shelf of shelves) {
+    const { typeface, side, z0, z1, y } = shelf;
+    addShelfLabel(scene, shelf);
+    const font = fonts.get(typeface.file)!;
+    const slot = (z0 - z1) / typeface.letters.length;
+    typeface.letters.forEach((glyph, i) => {
+      const color = typeface.colors[i % typeface.colors.length];
+      const product = buildLetter(glyph, typeface, font, color, products.length);
+      const x = side * (AISLE.frontX + 0.14);
+      const z = z0 - slot * (i + 0.5);
+      product.homePosition.set(x, y + product.shape.halfExtents.y + 0.002, z);
+      // Face into the aisle like the other products, angled a little towards the shopper.
+      const yaw = side < 0 ? Math.PI / 2 - FACE_TURN : -Math.PI / 2 + FACE_TURN;
+      product.homeQuaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+      product.object.position.copy(product.homePosition);
+      product.object.quaternion.copy(product.homeQuaternion);
+      scene.add(product.object);
+      products.push(product);
     });
-  });
+  }
   return products;
 }
 
-export const cssFamily = (tf: Typeface) => `shelf-${tf.file.replace(/\W/g, '')}`;
+export const cssFamily = (tf: Typeface) => fontFamilyFor(tf.file);
 
 function buildLetter(
   glyph: string,
@@ -101,32 +106,36 @@ function buildLetter(
   };
 }
 
-/** A label strip on the shelf's front edge: classification + typeface, set in that typeface. */
-function addShelfLabel(scene: THREE.Scene, tf: Typeface, x: number, levelY: number): void {
+/** A label strip on the shelf's front rail: classification + typeface, set in that typeface. */
+function addShelfLabel(scene: THREE.Scene, shelf: TypeShelf): void {
+  const { typeface: tf, side, z0, z1, y } = shelf;
   const w = 1024;
-  const h = 64;
+  const h = 56;
   const c = document.createElement('canvas');
   c.width = w;
   c.height = h;
   const g = c.getContext('2d')!;
   g.fillStyle = '#fbf8f1';
   g.fillRect(0, 0, w, h);
+  g.fillStyle = '#1f6f50';
+  g.fillRect(0, 0, 10, h);
   g.fillStyle = '#1d1d1d';
   g.textBaseline = 'middle';
-  g.font = `600 26px -apple-system, "Helvetica Neue", sans-serif`;
-  g.fillText(tf.classification.toUpperCase(), 24, h / 2 + 2);
+  g.font = `600 22px -apple-system, "Helvetica Neue", sans-serif`;
+  g.fillText(tf.classification.toUpperCase(), 24, h / 2 + 1);
   g.textAlign = 'right';
-  g.font = `38px "${cssFamily(tf)}", serif`;
-  g.fillText(tf.name, w - 24, h / 2 + 4);
+  g.font = `34px "${cssFamily(tf)}", serif`;
+  g.fillText(tf.name, w - 18, h / 2 + 3);
 
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = 8;
-  const labelW = STORE.shelfWidth * 0.96;
-  const labelH = (labelW * h) / w;
-  const label = new THREE.Mesh(new THREE.PlaneGeometry(labelW, labelH), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.8 }));
-  // Hangs just below the front edge of the board, like a price strip.
-  label.position.set(x, levelY - STORE.boardThickness - labelH / 2, STORE.shelfUnitZ + STORE.shelfDepth / 2 + 0.002);
+  tex.anisotropy = 16;
+  const len = (z0 - z1) * 0.98;
+  const labelH = (len * h) / w;
+  const label = new THREE.Mesh(new THREE.PlaneGeometry(len, labelH), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.7 }));
+  // On the rail just below the board, facing into the aisle.
+  label.position.set(side * (AISLE.frontX - 0.004), y - AISLE.board - labelH / 2 + 0.02, (z0 + z1) / 2);
+  label.rotation.y = side < 0 ? Math.PI / 2 : -Math.PI / 2;
   scene.add(label);
 }
 
