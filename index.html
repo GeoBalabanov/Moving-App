@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Virtual Store</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="scene"></canvas>
+
+      <div id="hud" class="panel">
+        <div class="hud-count">Items in basket: <strong id="basket-count">0</strong></div>
+        <div class="hud-hint" id="hud-hint">Pinch to grab · R reset · D debug</div>
+        <div class="hud-buttons">
+          <button id="btn-reset" type="button">Reset (R)</button>
+          <button id="btn-debug" type="button">Debug (D)</button>
+        </div>
+      </div>
+
+      <div id="debug" class="panel hidden"></div>
+
+      <div id="preview" class="hidden">
+        <canvas id="preview-canvas"></canvas>
+        <div id="preview-status">Starting camera…</div>
+      </div>
+
+      <video id="webcam" playsinline muted></video>
+
+      <div id="overlay">
+        <div class="card" id="overlay-card">
+          <h1>Virtual Store</h1>
+          <p>
+            Grab products off the shelves with your real hands. Your webcam is used for
+            hand tracking only — video never leaves your computer.
+          </p>
+          <ol>
+            <li><strong>Pinch</strong> (thumb + index) near a product to grab it.</li>
+            <li>Move your hand to carry it; open the pinch to drop or gently toss it.</li>
+            <li>Move your hand toward the screen to reach deeper into the aisle.</li>
+            <li>Drop items into the red basket on the counter.</li>
+          </ol>
+          <div class="actions">
+            <button id="btn-camera" class="primary" type="button">Allow camera</button>
+            <button id="btn-mouse" type="button">Use mouse only</button>
+          </div>
+          <p class="error hidden" id="overlay-error"></p>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
