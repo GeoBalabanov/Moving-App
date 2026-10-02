@@ -4,7 +4,7 @@
 import * as THREE from 'three';
 import { HAND_MAPPING } from './config';
 import type { Grabber } from './grabber';
-import { TrackedHand } from './handMapping';
+import { TrackedHand, depthCalibration } from './handMapping';
 import { CameraError, HandTracker, PreviewRenderer, startWebcam, type Handedness } from './handTracking';
 import { HandVisual } from './handVisuals';
 import { Interaction } from './interaction';
@@ -154,6 +154,7 @@ async function main(): Promise<void> {
       `detect         ${tracker.detectMs.toFixed(1)} ms · ${tracker.detectFps.toFixed(0)} Hz`,
       `hands detected ${tracker.latest.length}`,
       `depth mapping  ${HAND_MAPPING.reachIn ? 'reach-in' : 'mirror'} (I to toggle)`,
+      `size range     ${depthCalibration.min.toFixed(3)} – ${depthCalibration.max.toFixed(3)} (auto)`,
     ];
     for (const h of [hands.Left, hands.Right]) {
       lines.push('');
@@ -177,7 +178,7 @@ async function main(): Promise<void> {
   requestAnimationFrame(loop);
 
   // Handy for poking at things from the devtools console.
-  Object.assign(window, { store: { scene: store.scene, camera: store.camera, products, physics, interaction, hands, mouse, reset } });
+  Object.assign(window, { store: { scene: store.scene, camera: store.camera, products, physics, interaction, hands, mouse, reset, depthCalibration } });
 }
 
 const fmt = (v: THREE.Vector3) => `${v.x.toFixed(2)}, ${v.y.toFixed(2)}, ${v.z.toFixed(2)}`;

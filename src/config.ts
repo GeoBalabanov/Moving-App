@@ -16,9 +16,28 @@ export const STORE = {
   shelfTop: 1.85,
   boardThickness: 0.03,
   panelThickness: 0.04,
+  /** Limits for where a held letter can be carried (the aisle in front of the display). */
   backWallZ: -1.8,
-  sideWallX: 3.2,
+  sideWallX: 2.65,
+  /** Invisible wall just behind the camera. */
   frontWallZ: 3.2,
+};
+
+/** The visible store around the interactive aisle. */
+export const ROOM = {
+  halfWidth: 7.5,
+  backZ: -10,
+  frontZ: 3.4,
+  height: 3.6,
+};
+
+/** The stocked gondolas that form the aisle you stand in. */
+export const AISLE = {
+  gondolaX: 3.0,
+  gondolaDepth: 0.6,
+  gondolaHeight: 1.9,
+  startZ: -1.75,
+  endZ: 3.3,
 };
 
 export const COUNTER = {
@@ -36,14 +55,19 @@ export const HAND_MAPPING = {
   /** Expand the usable webcam area so you can reach screen edges without leaving the frame. */
   gain: 1.3,
   /**
-   * Apparent hand size (wrist → middle-finger knuckle, as a fraction of the
-   * image height) at the "far" and "near" ends of the calibrated range.
+   * Starting guess for the apparent hand size (wrist → middle-finger knuckle,
+   * as a fraction of the image height) at the "far" and "near" ends of your
+   * reach. The range auto-calibrates: it widens to the smallest/largest sizes
+   * it sees and slowly relaxes back, so it adapts to your camera and seat.
    */
-  sizeFar: 0.09,
-  sizeNear: 0.22,
-  /** Distance from the virtual camera along the view ray at each end of the range. */
+  sizeFar: 0.1,
+  sizeNear: 0.24,
+  /** Smallest size range the calibration may shrink to (keeps depth from being twitchy). */
+  minSizeRange: 0.07,
+  /** Distance from the virtual camera along the view axis at each end of the range. */
   distNear: 1.5,
-  distFar: 4.6,
+  /** Just in front of the shelf backs, so the hand never disappears behind the display. */
+  distFar: 4.1,
   /**
    * true  → moving your hand toward the screen reaches deeper into the aisle
    *         (feels like reaching through a window). Toggle in-app with I.
@@ -51,7 +75,7 @@ export const HAND_MAPPING = {
    */
   reachIn: true,
   /** World-space length of the wrist → middle knuckle segment (slightly larger than life so it reads on screen). */
-  palmLength: 0.13,
+  palmLength: 0.17,
   /** How long a hand may vanish from tracking before we treat it as gone (ms). */
   lostTimeoutMs: 300,
 };

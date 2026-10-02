@@ -17,6 +17,24 @@ import { HAND_COLORS } from './handTracking';
 
 const NUM_LANDMARKS = 21;
 
+/** Depth calibration shared by both hands: the observed range of hand sizes. */
+export const depthCalibration = {
+  min: HAND_MAPPING.sizeFar,
+  max: HAND_MAPPING.sizeNear,
+  lastT: 0,
+  observe(size: number, t: number): void {
+    const dt = this.lastT ? Math.min(t - this.lastT, 0.5) : 0;
+    this.lastT = t;
+    // Relax ~3%/s back toward the defaults so one odd reading doesn't stick forever.
+    const k = 1 - Math.exp(-0.03 * dt);
+    this.min += (HAND_MAPPING.sizeFar - this.min) * k;
+    this.max += (HAND_MAPPING.sizeNear - this.max) * k;
+    this.min = Math.min(this.min, size);
+    this.max = Math.max(this.max, size);
+    if (this.max - this.min < HAND_MAPPING.minSizeRange) this.max = this.min + HAND_MAPPING.minSizeRange;
+  },
+};
+
 const _ndc = new THREE.Vector3();
 const _dir = new THREE.Vector3();
 const _fwd = new THREE.Vector3();
@@ -62,8 +80,9 @@ export class TrackedHand implements Grabber {
 
     // --- Depth from apparent hand size --------------------------------------
     this.size = handSize(lm, aspect);
+    depthCalibration.observe(this.size, t);
     const s = THREE.MathUtils.clamp(
-      (this.size - HAND_MAPPING.sizeFar) / (HAND_MAPPING.sizeNear - HAND_MAPPING.sizeFar),
+      (this.size - depthCalibration.min) / (depthCalibration.max - depthCalibration.min),
       0,
       1,
     );

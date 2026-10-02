@@ -8,6 +8,10 @@ your hands (MediaPipe HandLandmarker). Pinch to pick letters off the shelves, th
 carry them, pass them between hands, toss them, and drop them into the basket to
 spell words. You don't need a VR headset: just a laptop camera.
 
+You stand in a supermarket aisle. Stocked shelves line both sides, and the type
+display is at the end of the aisle. Behind it you can see more aisles with hanging
+signs, a wall of coolers and ceiling light panels.
+
 ## The typefaces
 
 | Shelf unit | Top → bottom |
@@ -87,7 +91,9 @@ The HUD counts the letters in the red basket and shows the word they spell.
 src/
   main.ts          boot, start screen, one requestAnimationFrame loop for detection + physics + render
   config.ts        all tuning constants (layout, depth calibration, pinch thresholds, throw)
-  scene.ts         Three.js renderer, camera, lights/shadows, floor, walls, shelves, counter, basket
+  scene.ts         renderer, camera, lighting (shadows + environment reflections), the type display, basket counter
+  decor.ts         store dressing: stocked aisle gondolas, background aisles, coolers, ceiling lights, aisle signs
+  textures.ts      procedural canvas textures (floor tiles, pegboard, signs, packaging)
   typefaces.ts     the 12 shelf typefaces: classification, teaching note, letters, colours
   glyphGeometry.ts TTF loading (opentype.js) → extruded glyph geometry + convex-hull points
   products.ts      30 letter products, shelf label strips, highlight helper
@@ -95,7 +101,7 @@ src/
   handTracking.ts  webcam permission, HandLandmarker (VIDEO mode, GPU → CPU fallback), mirrored preview
   handMapping.ts   landmarks → 3D hand (projection, depth from hand size, One Euro smoothing)
   gestures.ts      pinch detection with hysteresis
-  handVisuals.ts   3D hand (joint spheres + bone cylinders), pinch cursor, floor marker for depth
+  handVisuals.ts   3D hand (joint spheres + bone cylinders), always-visible x-ray outline, pinch cursor, floor marker
   interaction.ts   hover, grab, follow, release with velocity, hand-to-hand pass, basket counting
   mouseInput.ts    mouse fallback grabber
   filters.ts       One Euro filter
@@ -110,9 +116,12 @@ src/
 - **Depth direction:** by default a bigger hand (closer to the webcam) reaches
   *deeper* into the aisle, as if you were reaching through the screen like a
   window. Press **I** to invert this, so a bigger hand comes closer to you. To
-  calibrate for your own setup, adjust `HAND_MAPPING.sizeFar`, `sizeNear`,
-  `distNear` and `distFar` in `src/config.ts`. The debug panel shows the live hand
-  size.
+  depth range **calibrates itself**: it widens to the smallest and largest hand
+  sizes it sees, so reach once close to and once far from the camera, and the
+  full range maps onto the store. The hand always stays in front of the shelves,
+  and a faint outline shows it even when a shelf or letter is in the way. The
+  debug panel shows the live hand size and the calibrated range. The starting
+  values live in `HAND_MAPPING` in `src/config.ts`.
 - **Pinch:** the thumb–index distance is divided by hand size. A pinch starts
   below 0.32 and only ends above 0.5, so the gap between the two (hysteresis) stops
   the grab from flickering.
